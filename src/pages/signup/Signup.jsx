@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSignup } from '../../hooks/useSignup';
 
 // styles
 import './Signup.css';
@@ -9,6 +10,7 @@ export default function SignUp() {
   const [displayName, setDisplayName] = useState('');
   const [thumbnail, setThumbnail] = useState(null);
   const [thumbnailError, setThumbnailError] = useState(null);
+  const { signup, isPending, error } = useSignup();
 
   // handles the file upload for the profile pic
   const handleFileChange = (e) => {
@@ -43,7 +45,7 @@ export default function SignUp() {
   // Handles the form submit
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(email, password, displayName, thumbnail);
+    signup(email, password, displayName, thumbnail);
   };
 
   return (
@@ -87,7 +89,13 @@ export default function SignUp() {
         <input type='file' required onChange={handleFileChange} />
         {thumbnailError && <div className='error'>{thumbnailError}</div>}
       </label>
-      <button className='btn'>Sign Up</button>
+      {!isPending && <button className='btn'>Sign Up</button>}
+      {isPending && (
+        <button className='btn' disabled>
+          Loading
+        </button>
+      )}
+      {error && <div className='error'>{error}</div>}
     </form>
   );
 }
