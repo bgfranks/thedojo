@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useHistory } from 'react-router';
 import Select from 'react-select';
 import { useCollection } from '../../hooks/useCollection';
+import { useAuthContext } from '../../hooks/useAuthContext';
+import { useFirestore } from '../../hooks/useFirestore';
+import { timestamp } from '../../firebase/config';
 
 // styles
 import './Create.css';
@@ -14,9 +18,18 @@ const categories = [
 ];
 
 export default function Create() {
+  // gets the url history
+  const history = useHistory();
+
   // getting the user doc
   const { documents } = useCollection('users');
   const [users, setUsers] = useState([]);
+
+  // getting the current user
+  const { user } = useAuthContext();
+
+  // getting the add doc function from the firestore hook
+  const { addDocument, response } = useFirestore('projects');
 
   // form state
   const [name, setName] = useState('');
@@ -37,7 +50,7 @@ export default function Create() {
   }, [documents]);
 
   // handles form submit
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError(null);
 
@@ -52,8 +65,40 @@ export default function Create() {
       return;
     }
 
+    // creates author object
+    const createdBy = {
+      displayName: user.displayName,
+      photoURL: user.photoURL,
+      id: user.uid,
+    };
+
+    // maps through assigned users to gather user data for firestore
+    const assignedUsersList = assignedUsers.map((u) => {
+      return {
+        displayName: u.value.displayName,
+        photoURL: u.value.photoURL,
+        id: u.value.id,
+      };
+    });
+
+    // gathering the data to get ready for firestore
+    const project = {
+      name,
+      details,
+      category: category.value,
+      dueDate: timestamp.fromDate(new Date(dueDate)),
+      comments: [],
+      createdBy,
+      assignedUsersList,
+    };
+
     // save project to firestore collection
-    console.log(name, details, dueDate, category, assignedUsers);
+    await addDocument(project);
+
+    // if no error, redirect to the homepage
+    if (!response.error) {
+      history.push('/');
+    }
   };
 
   return (
