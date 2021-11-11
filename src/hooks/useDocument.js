@@ -12,8 +12,13 @@ export const useDocument = (collection, id) => {
 
     const unsubscribe = ref.onSnapshot(
       (snapshot) => {
-        setDocument({ ...snapshot.data(), id: snapshot.id });
-        setError(null);
+        // checks to see if the snapshot has document data
+        if (snapshot.data()) {
+          setDocument({ ...snapshot.data(), id: snapshot.id });
+          setError(null);
+        } else {
+          setError('No such document exists');
+        }
       },
       (err) => {
         console.log(err.message);
@@ -21,6 +26,7 @@ export const useDocument = (collection, id) => {
       }
     );
 
+    // unsubscribes on unmount
     return () => unsubscribe();
   }, [collection, id]);
 
