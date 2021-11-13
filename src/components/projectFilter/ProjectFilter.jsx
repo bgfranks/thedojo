@@ -1,5 +1,4 @@
-import { useState } from 'react';
-
+// filter options
 const filterList = [
   'all',
   'mine',
@@ -9,13 +8,9 @@ const filterList = [
   'sales',
 ];
 
-export default function ProjectFilter() {
-  // filter state
-  const [currentFilter, setCurrentFilter] = useState('all');
-
+export default function ProjectFilter({ currentFilter, changeFilter }) {
   const handleClick = (newFilter) => {
-    console.log(newFilter);
-    setCurrentFilter(newFilter);
+    changeFilter(newFilter);
   };
 
   return (
